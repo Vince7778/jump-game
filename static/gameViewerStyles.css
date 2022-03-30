@@ -13,6 +13,11 @@
     background-color: lightgreen;
 }
 
+.game-td-myplayer {
+    color: white;
+    background-color: darkgreen;
+}
+
 .game-table > tr > td {
     border: 1px solid #CCC;
 }

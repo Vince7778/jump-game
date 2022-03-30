@@ -288,6 +288,7 @@ export class Game {
                 pos: myPlayer.pos,
                 invented: myPlayer.invented,
                 points: myPlayer.points,
+                idHash: myPlayer.idHash,
                 nextMoveTurn: myPlayer.nextMoveTurn,
                 lastMoveStatus: myPlayer.lastMoveStatus
             };
