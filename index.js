@@ -35,7 +35,12 @@ router.get("/api/joinGame", (req, res) => {
     const newPlayer = new Player(id);
     for (const game of gameList) {
         if (game.canCurrentlyJoin()) {
-            game.join(newPlayer);
+            try {
+                game.join(newPlayer);
+            } catch (err) {
+                res.status(400).json({ error: err.message });
+                return;
+            }
             res.json({
                 playerId: id,
                 gameId: game.gameId,
@@ -46,7 +51,12 @@ router.get("/api/joinGame", (req, res) => {
     }
     // No game found
     const newGame = new Game(getId());
-    newGame.join(newPlayer);
+    try {
+        newGame.join(newPlayer);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+        return;
+    }
     gameList.push(newGame);
     res.json({
         playerId: id,
@@ -70,6 +80,50 @@ router.post("/api/getGame", jsonParser, (req, res) => {
 
     const gameInfo = game.getGame(playerId);
     res.json(gameInfo);
+});
+
+router.post("/api/move", jsonParser, (req, res) => {
+    const { gameId, playerId, move } = req.body;
+    if (!gameId) {
+        res.status(400).json({ ok: false, error: "ERR_NO_GAME_ID" });
+        return;
+    }
+    if (!playerId) {
+        res.status(400).json({ ok: false, error: "ERR_NO_PLAYER_ID" });
+        return;
+    }
+    if (!move) {
+        res.status(400).json({ ok: false, error: "ERR_NO_MOVE" });
+        return;
+    }
+    if (!move.hasOwnProperty("type") || !["none", "jump", "invent"].includes(move.type)) {
+        res.status(400).json({ ok: false, error: "ERR_INVALID_MOVE_TYPE" });
+        return;
+    }
+    if (!move.hasOwnProperty("vec") || (typeof move.vec[0] !== "number") || (typeof move.vec[1] !== "number")) {
+        res.status(400).json({ ok: false, error: "ERR_INVALID_MOVE_VEC" });
+        return;
+    }
+
+    const game = gameList.find(g => g.gameId === gameId);
+    if (!game) {
+        res.status(400).json({ ok: false, error: "ERR_GAME_DOES_NOT_EXIST" });
+        return;
+    }
+
+    if (!game.isJoined(playerId)) {
+        res.status(400).json({ ok: false, error: "ERR_PLAYER_NOT_IN_GAME" });
+        return;
+    }
+
+    let moveRes;
+    try {
+        moveRes = game.setMove(playerId, move);
+    } catch (err) {
+        res.status(400).json({ ok: false, error: err.message });
+        return;
+    }
+    res.json(moveRes);
 });
 
 const args = process.argv;

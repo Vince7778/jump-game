@@ -20,13 +20,15 @@ async function refreshGame(id, elem) {
         gameData = await serverResp.json();
         if (serverResp.ok) {
             displayGame(elem);
+            curViewTimeout = setTimeout(() => refreshGame(id, elem), gameData.nextTurnTime-Date.now());
         } else {
             elem.innerHTML = "Error fetching game: "+gameData.error;
+            curViewTimeout = setTimeout(() => refreshGame(id, elem), 1000);
         }
     } catch (err) {
         elem.innerHTML = "Error fetching game: "+err;
+        curViewTimeout = setTimeout(() => refreshGame(id, elem), 1000);
     }
-    curViewTimeout = setTimeout(() => refreshGame(id, elem), 1000);
 }
 
 // Displays the game with parent element elem

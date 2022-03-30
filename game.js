@@ -75,11 +75,29 @@ export class Game {
         this.turnNum = newTurnNum;
     }
 
+    prelimMoveCheck(p, move) {
+        if (move.type === "jump") {
+            if (!includesArray(p.invented, move.vec)) {
+                return [false, "ERR_NOT_INVENTED"];
+            }
+
+            const destPos = [p.pos[0]+move.vec[0], p.pos[1]+move.vec[1]];
+            if (!isInBounds(destPos)) {
+                return [false, "ERR_JUMP_OUT_OF_BOUNDS"];
+            }
+        } else if (move.type === "invent") {
+            if (includesArray(this.invents, move.vec)) {
+                return [false, "ERR_ALREADY_INVENTED"];
+            }
+        }
+        return [true, "SUCCESS"];
+    }
+
     // Assumes that current turn is turnNum+1
     runMoves() {
         // remove pre-emptive turns
         for (const p of this.players) {
-            if (p.nextMoveTurn > this.turnNum+1) {
+            if (p.move.type !== "none" && p.nextMoveTurn > this.turnNum+1) {
                 p.setMoveStatus(false, "ERR_MOVE_DELAY");
                 p.resetMove();
             }
@@ -106,6 +124,8 @@ export class Game {
                 const destPos = [p.pos[0]+p.move.vec[0], p.pos[1]+p.move.vec[1]];
                 if (!isInBounds(destPos)) {
                     p.setMoveStatus(false, "ERR_JUMP_OUT_OF_BOUNDS");
+                    p.resetMove();
+                    continue;
                 }
                 if (includesArray(destList, destPos)) {
                     p.setMoveStatus(false, "ERR_JUMP_CONFLICT");
@@ -264,11 +284,32 @@ export class Game {
             ret.myPlayer = {
                 pos: myPlayer.pos,
                 invented: myPlayer.invented,
+                points: myPlayer.points,
                 nextMoveTurn: myPlayer.nextMoveTurn,
                 lastMoveStatus: myPlayer.lastMoveStatus
             };
         }
         return ret;
+    }
+
+    setMove(playerId, move) {
+        this.update();
+        const player = this.players.find(p => p.id === playerId);
+        if (!player) {
+            throw new Error("ERR_PLAYER_NOT_IN_GAME");
+        }
+
+        const prelimChk = this.prelimMoveCheck(player, move);
+        if (!prelimChk[0]) throw new Error(prelimChk[1]);
+
+        player.move.type = move.type;
+        player.move.vec[0] = move.vec[0];
+        player.move.vec[1] = move.vec[1];
+
+        return {
+            ok: true,
+            turnNum: this.turnNum
+        }
     }
 
 }

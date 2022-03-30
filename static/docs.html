@@ -85,6 +85,34 @@
                         </ul>
                     </div>
                 </div>
+                <div class="api-func mb-4">
+                    <code>/api/move (POST)</code>
+                    <p class="mb-1">Tries to move your player. Overrides any earlier moves in the turn.</p>
+                    <div>
+                        <p class="mb-1">Arguments:</p>
+                        <ul class="mb-1">
+                            <li><code>playerId</code>: The id of your player.</li>
+                            <li><code>gameId</code>: The id of the joined game.</li>
+                            <li><code>move</code>: The move to be carried out, in the following format:
+                                <ul>
+                                    <li><code>type</code>: The type of the move, can be "none", "jump", or "invent"</li>
+                                    <li><code>vec</code>: The vector for the move (doesn't matter for type "none", but must exist anyway)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="mb-1">
+                            Note that even if this reports a success, the move may fail anyways. After the next turn, check <code>lastMoveStatus</code>.
+                            If the move fails in the preliminary check (and errors here), the <code>lastMoveStatus</code> will NOT be updated.
+                            Returns an error code if failed, but otherwise:
+                        </p>
+                        <ul class="mb-1">
+                            <li><code>ok</code>: Whether or not the move succeeded. (Should always be true if status is 200)</li>
+                            <li><code>turnNum</code>: The turn the move was queued for.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
