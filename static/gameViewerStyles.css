@@ -1,5 +1,6 @@
 
 .game-td-point {
+    color: black;
     background-color: yellow;
 }
 
@@ -8,6 +9,7 @@
 }
 
 .game-td-player {
+    color: black;
     background-color: lightskyblue;
 }
 

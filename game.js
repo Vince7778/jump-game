@@ -1,12 +1,46 @@
 import settings from "./settings.json";
 
+// Check whether a (T[][]) includes b (T[])
+function includesArray(a, b) {
+    for (const el of a) {
+        if (el.every((v, i) => v === a[i])) return true;
+    }
+    return false;
+}
+
 export class Player {
     constructor(id) {
         this.id = id;
 
         this.invented = [];
         this.pos = [0, 0];
+        this.nextMoveTurn = -1;
+
+        // Possible types: "none", "jump", "invent"
+        this.move = {
+            type: "none",
+            vec: [-1, -1]
+        }
+        this.lastMoveStatus = {
+            ok: true,
+            msg: ""
+        }
     }
+
+    resetMove() {
+        this.move.type = "none";
+        this.move.vec = [-1, -1];
+    }
+
+    setMoveStatus(ok, msg) {
+        this.lastMoveStatus.ok = ok;
+        this.lastMoveStatus.msg = msg;
+    }
+}
+
+function isInBounds(pos) {
+    const { width, height } = settings;
+    return pos[0] >= 0 && pos[1] >= 0 && pos[0] < width && pos[1] < height;
 }
 
 // Note: All timed functions are evaluated lazily. This includes starting the game, turns, etc.
@@ -19,6 +53,7 @@ export class Game {
         this.players = [];
 
         this.board = [];
+        this.invents = []; // list of all invented jumps
         this.turnNum = -1;
         this.gameStartTime = -1; // Time of first turn start
     }
@@ -27,6 +62,101 @@ export class Game {
     update() {
         if (this.shouldStartGame()) {
             this.startGame();
+        }
+
+        const newTurnNum = Math.floor((Date.now()-this.gameStartTime)/settings.turnDelay)+1;
+        if (newTurnNum > this.turnNum) {
+            if (this.gameState !== "lobby") {
+                this.runMoves();
+            }
+        }
+
+        this.turnNum = newTurnNum;
+    }
+
+    // Assumes that current turn is turnNum+1
+    runMoves() {
+        // remove pre-emptive turns
+        for (const p of this.players) {
+            if (p.nextMoveTurn > this.turnNum+1) {
+                p.setMoveStatus(false, "ERR_MOVE_DELAY");
+                p.resetMove();
+            }
+        }
+
+        const destList = []; // list of endpoints of jumps
+        const invalidDest = [];
+
+        // can't move to occupied space
+        for (const p of this.players) {
+            destList.push(p.pos);
+        }
+
+        const inventList = []; // list of new inventions
+        const invalidInvent = [];
+        for (const p of this.players) {
+            if (p.move.type === "jump") {
+                if (!includesArray(p.invented, p.move.vec)) {
+                    p.setMoveStatus(false, "ERR_NOT_INVENTED");
+                    p.resetMove();
+                    continue;
+                }
+
+                const destPos = [p.pos[0]+p.move.vec[0], p.pos[1]+p.move.vec[1]];
+                if (!isInBounds(destPos)) {
+                    p.setMoveStatus(false, "ERR_JUMP_OUT_OF_BOUNDS");
+                }
+                if (includesArray(destList, destPos)) {
+                    p.setMoveStatus(false, "ERR_JUMP_CONFLICT");
+                    invalidDest.push(destPos);
+                    p.resetMove();
+                    continue;
+                }
+                destList.push(destPos);
+            } else if (p.move.type === "invent") {
+                if (includesArray(this.invents, p.move.vec)) {
+                    p.setMoveStatus(false, "ERR_ALREADY_INVENTED");
+                    p.resetMove();
+                    continue;
+                }
+
+                if (includesArray(inventList, p.move.vec)) {
+                    p.setMoveStatus(false, "ERR_INVENT_CONFLICT");
+                    invalidInvent.push(p.move.vec);
+                    p.resetMove();
+                    continue;
+                }
+                inventList.push(p.move.vec);
+            }
+        }
+
+        // erase invalid moves and carry out successful moves
+        for (const p of this.players) {
+            if (p.move.type === "jump") {
+                const destPos = [p.pos[0]+p.move.vec[0], p.pos[1]+p.move.vec[1]];
+                if (includesArray(invalidDest, destPos)) {
+                    p.setMoveStatus(false, "ERR_JUMP_CONFLICT");
+                    p.resetMove();
+                    continue;
+                }
+
+                p.pos = destPos;
+                p.nextMoveTurn = this.turnNum+1+settings.jumpTurns;
+                p.setMoveStatus(true, "JUMP_SUCCESS");
+                p.resetMove();
+            } else if (p.move.type === "invent") {
+                if (includesArray(invalidInvent, p.move.vec)) {
+                    p.setMoveStatus(false, "ERR_INVENT_CONFLICT");
+                    p.resetMove();
+                    continue;
+                }
+
+                this.invents.push(p.move.vec);
+                p.invented.push(p.move.vec);
+                p.nextMoveTurn = this.turnNum+1+settings.inventTurns;
+                p.setMoveStatus(true, "INVENT_SUCCESS");
+                p.resetMove();
+            }
         }
     }
 
@@ -75,7 +205,7 @@ export class Game {
         const genPos = () => { return [Math.floor(Math.random()*width), Math.floor(Math.random()*height)]}
         for (const p of this.players) {
             let tryPos = genPos();
-            while (usedPos.includes(tryPos)) tryPos = genPos(); // prevent overlaps
+            while (includesArray(usedPos, tryPos)) tryPos = genPos(); // prevent overlaps
             p.pos = tryPos;
         }
 
@@ -83,7 +213,7 @@ export class Game {
         for (let x = 0; x < height; x++) {
             const tempRow = [];
             for (let y = 0; y < width; y++) {
-                if (!usedPos.includes([x, y]) && Math.random() < settings.pointDensity) {
+                if (!includesArray(usedPos, [x, y]) && Math.random() < settings.pointDensity) {
                     tempRow.push("$");
                 } else {
                     tempRow.push(".");

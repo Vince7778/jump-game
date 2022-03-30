@@ -4,5 +4,8 @@
     "width": 20,
     "height": 20,
     "pointDensity": 0.2,
-    "startDelay": 5000
+    "startDelay": 5000,
+    "turnDelay": 1000,
+    "jumpTurns": 1,
+    "inventTurns": 5
 }
