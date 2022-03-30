@@ -1,0 +1,8 @@
+{
+    "maxPlayers": 10,
+    "minPlayers": 2,
+    "width": 20,
+    "height": 20,
+    "pointDensity": 0.2,
+    "startDelay": 5000
+}

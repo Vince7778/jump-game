@@ -1,0 +1,12 @@
+
+.game-td-point {
+    background-color: yellow;
+}
+
+.game-td-player {
+    background-color: lightskyblue;
+}
+
+.game-table > tr > td {
+    text-align: center;
+}
