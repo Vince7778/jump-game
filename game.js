@@ -199,7 +199,7 @@ export class Game {
     join(player) {
         this.update();
         if (!this.canCurrentlyJoin()) {
-            throw new Error("ERR_LATE_JOIN");
+            throw new Error("ERR_GAME_STARTED");
         }
 
         if (this.players.length >= settings.maxPlayers) {
@@ -298,6 +298,9 @@ export class Game {
 
     setMove(playerId, move) {
         this.update();
+        if (this.gameState !== "playing") {
+            throw new Error("ERR_GAME_NOT_STARTED");
+        }
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
             throw new Error("ERR_PLAYER_NOT_IN_GAME");

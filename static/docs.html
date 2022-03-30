@@ -71,7 +71,7 @@
                     </div>
                 </div>
                 <div class="api-func mb-4">
-                    <code>/api/joinGame (GET)</code>
+                    <code>/api/joinGame (POST)</code>
                     <p class="mb-1">Joins the first available game.</p>
                     <div>
                         <p class="mb-1">Arguments: None</p>
@@ -97,7 +97,7 @@
                             <li><code>move</code>: The move to be carried out, in the following format:
                                 <ul>
                                     <li><code>type</code>: The type of the move, can be "none", "jump", or "invent"</li>
-                                    <li><code>vec</code>: The vector for the move (doesn't matter for type "none", but must exist anyway)</li>
+                                    <li><code>vec</code>: The vector for the move (optional if type="none")</li>
                                 </ul>
                             </li>
                         </ul>

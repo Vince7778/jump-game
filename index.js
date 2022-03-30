@@ -38,7 +38,7 @@ const randIdMult = 1e12;
 const getRandId = () => { return getId()*randIdMult+Math.floor(Math.random()*randIdMult) }
 
 // api functions
-router.get("/api/joinGame", (req, res) => {
+router.post("/api/joinGame", (req, res) => {
     const id = getRandId();
     const newPlayer = new Player(id);
     for (const game of gameList) {
@@ -46,8 +46,7 @@ router.get("/api/joinGame", (req, res) => {
             try {
                 game.join(newPlayer);
             } catch (err) {
-                res.status(400).json({ error: err.message });
-                return;
+                continue;
             }
             res.json({
                 playerId: id,
@@ -62,7 +61,7 @@ router.get("/api/joinGame", (req, res) => {
     try {
         newGame.join(newPlayer);
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(422).json({ error: err.message });
         return;
     }
     gameList.push(newGame);
@@ -82,7 +81,7 @@ router.post("/api/getGame", jsonParser, (req, res) => {
 
     const game = gameList.find(g => g.gameId === gameId);
     if (!game) {
-        res.status(400).json({ error: "ERR_GAME_DOES_NOT_EXIST" });
+        res.status(422).json({ error: "ERR_GAME_DOES_NOT_EXIST" });
         return;
     }
 
@@ -108,19 +107,19 @@ router.post("/api/move", jsonParser, (req, res) => {
         res.status(400).json({ ok: false, error: "ERR_INVALID_MOVE_TYPE" });
         return;
     }
-    if (!move.hasOwnProperty("vec") || (typeof move.vec[0] !== "number") || (typeof move.vec[1] !== "number")) {
+    if (move.type !== "none" && !move.hasOwnProperty("vec") || (typeof move.vec[0] !== "number") || (typeof move.vec[1] !== "number")) {
         res.status(400).json({ ok: false, error: "ERR_INVALID_MOVE_VEC" });
         return;
     }
 
     const game = gameList.find(g => g.gameId === gameId);
     if (!game) {
-        res.status(400).json({ ok: false, error: "ERR_GAME_DOES_NOT_EXIST" });
+        res.status(422).json({ ok: false, error: "ERR_GAME_DOES_NOT_EXIST" });
         return;
     }
 
     if (!game.isJoined(playerId)) {
-        res.status(400).json({ ok: false, error: "ERR_PLAYER_NOT_IN_GAME" });
+        res.status(422).json({ ok: false, error: "ERR_PLAYER_NOT_IN_GAME" });
         return;
     }
 
@@ -128,7 +127,7 @@ router.post("/api/move", jsonParser, (req, res) => {
     try {
         moveRes = game.setMove(playerId, move);
     } catch (err) {
-        res.status(400).json({ ok: false, error: err.message });
+        res.status(422).json({ ok: false, error: err.message });
         return;
     }
     res.json(moveRes);

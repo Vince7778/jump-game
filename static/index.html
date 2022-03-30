@@ -40,16 +40,36 @@
                     <div class="tab-pane fade show active" id="gameView" role="tabpanel" aria-labelledby="gameViewButton">
                         <div class="mb-2" id="gameViewForm">
                             <label for="gameViewIdInput">View game with id:</label>
-                            <input type="text" id="gameViewIdInput">
+                            <input type="number" id="gameViewIdInput">
                             <input type="button" class="btn btn-primary" onclick="setView()" value="View">
                         </div>
                         <div id="gameViewArea"></div>
                     </div>
+
                     <div class="tab-pane fade" id="playView" role="tabpanel" aria-labelledby="playViewButton">
-                        <p>hi</p>
+                        <div class="mb-2">
+                            <input id="playJoinButton" type="button" class="btn btn-primary" onclick="joinGame()" value="Join a game">
+                        </div>
+                        <div class="mb-2 d-none" id="playMoveForm">
+                            <div id="playMoveTypeDiv" class="mb-2">
+                                <label for="playMoveTypeInput">Move type:</label>
+                                <select class="form-select d-inline w-auto" onchange="changeSelect()" id="playMoveTypeInput" autocomplete="off">
+                                    <option selected value="none">None</option>
+                                    <option value="jump">Jump</option>
+                                    <option value="invent">Invent</option>
+                                </select>
+                            </div>
+                            <div id="vecInputs" class="d-none mb-2">
+                                <label for="playMoveXInput">Distance down:</label>
+                                <input type="number" id="playMoveXInput">
+                                <label for="playMoveYInput">Distance left:</label>
+                                <input type="number" id="playMoveYInput">
+                            </div>
+                            <input type="button" class="btn btn-primary" onclick="sendMove()" value="Send move">
+                        </div>
+                        <div id="gamePlayArea"></div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -60,6 +80,49 @@
             const val = parseInt(document.getElementById("gameViewIdInput").value);
             if (gameViewer) gameViewer.destructor();
             gameViewer = new GameViewer(val, document.getElementById("gameViewArea"));
+        }
+
+        let gamePlayer;
+        async function joinGame() {
+            document.getElementById("playJoinButton").setAttribute("disabled", "true");
+            try {
+                const res = await fetch("api/joinGame", {
+                    method: "POST"
+                });
+                const cjson = await res.json();
+                if (gamePlayer) gamePlayer.destructor();
+                gamePlayer = new GamePlayer(cjson.gameId, document.getElementById("gamePlayArea"), cjson.playerId);
+                document.getElementById("playJoinButton").classList.add("d-none");
+                gamePlayer.onStart = () => {
+                    document.getElementById("playMoveForm").classList.remove("d-none");
+                }
+            } catch (err) {
+                alert("Error joining game: "+err);
+                document.getElementById("playJoinButton").setAttribute("disabled", "false");
+                document.getElementById("playMoveForm").classList.add("d-none");
+            }
+        }
+
+        function changeSelect() {
+            const selectValue = document.getElementById("playMoveTypeInput").value;
+            const vecInputsElem = document.getElementById("vecInputs");
+            if (selectValue === "none") {
+                vecInputsElem.classList.add("d-none");
+            } else {
+                vecInputsElem.classList.remove("d-none");
+            }
+        }
+
+        function sendMove() {
+            if (!gamePlayer) {
+                alert("Can't move because the game has not been joined yet!");
+                return;
+            }
+
+            const moveType = document.getElementById("playMoveTypeInput").value;
+            const moveX = parseInt(document.getElementById("playMoveXInput").value);
+            const moveY = parseInt(document.getElementById("playMoveYInput").value);
+            gamePlayer.sendMove(moveType, [moveX, moveY]);
         }
     </script>
 </body>
