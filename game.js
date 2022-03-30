@@ -211,7 +211,7 @@ export class Game {
         }
 
         this.players.push(player);
-        if (this.players.length >= settings.minPlayers) {
+        if (this.players.length === settings.minPlayers) {
             this.setGameStart();
         }
     }

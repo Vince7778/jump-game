@@ -7,6 +7,7 @@ class GameViewer {
         this.playerId = playerId ?? -1;
         /** @type{HTMLElement} */
         this.elem = elem;
+        elem.innerHTML = "";
 
         this.timeout = -1;
         this.destroyed = false;
@@ -67,7 +68,7 @@ class GameViewer {
         const table = document.getElementById(tableId) ?? document.createElement("table");
         table.id = tableId;
         if (gameData.gameState !== "lobby") {
-            infoP.innerText = `Turn: ${gameData.turnNum}`;
+            infoP.innerText = `Turn: ${gameData.turnNum}, Game ID: ${this.id}`;
 
             table.classList.add("game-table");
             table.innerHTML = "";
@@ -101,6 +102,13 @@ class GameViewer {
                 const elem = table.querySelector(posId);
                 elem.innerText = "Y";
                 elem.classList.add("game-td-myplayer");
+
+                let inventStr = "";
+                for (const vec of p.invented) {
+                    inventStr += `(${vec[0]}, ${vec[1]}),`;
+                }
+                inventStr = inventStr.slice(0, -1); // remove comma
+                infoP.innerText += `, Points: ${p.points}, Invented: [${inventStr}]`;
 
                 if (!p.lastMoveStatus.ok) {
                     this.showError(p.lastMoveStatus.msg, "last move");
@@ -147,6 +155,27 @@ class GameViewer {
 class GamePlayer extends GameViewer {
     constructor(gameId, elem, playerId) {
         super(gameId, elem, playerId);
+        this.moveEnabled = true;
+    }
+
+    // events
+    onMoveDisable(gameData) {} // fires every turn it is disabled
+    onMoveEnable(gameData) {} // fires when it is possible to move again
+
+    parseData(gameData) {
+        super.parseData(gameData);
+        console.log(gameData);
+
+        // must subtract one since moves happen at the beginning of the turn
+        if (gameData.gameState === "playing") {
+            if (gameData.myPlayer.nextMoveTurn-1 <= gameData.turnNum && !this.moveEnabled) {
+                this.onMoveEnable(gameData);
+                this.moveEnabled = true;
+            } else if (gameData.myPlayer.nextMoveTurn-1 > gameData.turnNum) {
+                this.onMoveDisable(gameData);
+                this.moveEnabled = false;
+            }
+        }
     }
 
     async sendMove(type, vec) {
