@@ -1,4 +1,5 @@
 import settings from "./settings.json";
+import cyrb53 from "./hash.cjs";
 
 // Check whether a (T[][]) includes b (T[])
 function includesArray(a, b) {
@@ -11,6 +12,7 @@ function includesArray(a, b) {
 export class Player {
     constructor(id) {
         this.id = id;
+        this.idHash = cyrb53(id.toString());
 
         this.invented = [];
         this.pos = [0, 0];
@@ -265,7 +267,8 @@ export class Game {
             return {
                 pos: p.pos,
                 invented: p.invented,
-                points: p.points
+                points: p.points,
+                idHash: p.idHash
             };
         });
         const nextTurnTime = this.gameStartTime + settings.turnDelay*this.turnNum;

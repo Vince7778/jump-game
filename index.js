@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 import path from "path";
 import { Game, Player } from "./game.js";
-import cyrb53 from "./hash.cjs";
 
 const dirname = path.resolve();
 const SERVER_PORT = process.env.port || 3000;
@@ -35,7 +34,7 @@ const gameList = [];
 
 let curId = 1;
 const getId = () => { curId++; return curId-1; }
-const randIdMult = 1e6;
+const randIdMult = 1e12;
 const getRandId = () => { return getId()*randIdMult+Math.floor(Math.random()*randIdMult) }
 
 // api functions

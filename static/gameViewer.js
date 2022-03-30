@@ -42,7 +42,7 @@ function displayGame(elem) {
         elem.appendChild(infoP);
 
         const table = document.createElement("table");
-        table.classList.add("table", "table-bordered", "table-sm", "game-table");
+        table.classList.add("game-table");
         const board = gameData.board;
         for (let x = 0; x < board.length; x++) {
             const tr = document.createElement("tr");

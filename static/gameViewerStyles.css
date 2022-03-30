@@ -10,7 +10,11 @@
 
 .game-td-player {
     color: black;
-    background-color: lightskyblue;
+    background-color: lightgreen;
+}
+
+.game-table > tr > td {
+    border: 1px solid #CCC;
 }
 
 .game-table > tr {
@@ -19,4 +23,5 @@
 
 .game-table {
     user-select: none;
+    width: 100%;
 }
