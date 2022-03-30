@@ -3,7 +3,7 @@ import settings from "./settings.json";
 // Check whether a (T[][]) includes b (T[])
 function includesArray(a, b) {
     for (const el of a) {
-        if (el.every((v, i) => v === a[i])) return true;
+        if (el.every((v, i) => v === b[i])) return true;
     }
     return false;
 }
@@ -15,6 +15,7 @@ export class Player {
         this.invented = [];
         this.pos = [0, 0];
         this.nextMoveTurn = -1;
+        this.points = 0;
 
         // Possible types: "none", "jump", "invent"
         this.move = {
@@ -144,6 +145,10 @@ export class Game {
                 p.nextMoveTurn = this.turnNum+1+settings.jumpTurns;
                 p.setMoveStatus(true, "JUMP_SUCCESS");
                 p.resetMove();
+                if (this.board[p.pos[0]][p.pos[1]] === "$") {
+                    p.points++;
+                    this.board[p.pos[0]][p.pos[1]] = ".";
+                }
             } else if (p.move.type === "invent") {
                 if (includesArray(invalidInvent, p.move.vec)) {
                     p.setMoveStatus(false, "ERR_INVENT_CONFLICT");
@@ -239,22 +244,28 @@ export class Game {
         const players = this.players.map(p => {
             return {
                 pos: p.pos,
-                invented: p.invented
+                invented: p.invented,
+                points: p.points
             };
-        })
+        });
+        const nextTurnTime = this.gameStartTime + settings.turnDelay*this.turnNum;
         const ret = {
             gameState: this.gameState,
             board: board,
             startTime: this.gameStartTime,
+            nextTurnTime: nextTurnTime,
+            turnDelay: settings.turnDelay,
             turnNum: this.turnNum,
-            players: players
+            players: players,
         }
         if (playerId) {
             const myPlayer = this.players.find(p => p.id === playerId);
             if (!myPlayer) return ret;
             ret.myPlayer = {
                 pos: myPlayer.pos,
-                invented: myPlayer.invented
+                invented: myPlayer.invented,
+                nextMoveTurn: myPlayer.nextMoveTurn,
+                lastMoveStatus: myPlayer.lastMoveStatus
             };
         }
         return ret;

@@ -35,6 +35,10 @@ function displayGame(elem) {
     elem.innerHTML = "";
 
     if (gameData.gameState !== "lobby") {
+        const infoP = document.createElement("p");
+        infoP.innerText = `Turn: ${gameData.turnNum}`;
+        elem.appendChild(infoP);
+
         const table = document.createElement("table");
         table.classList.add("table", "table-bordered", "table-sm", "game-table");
         const board = gameData.board;

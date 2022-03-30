@@ -43,15 +43,29 @@
                             <li><code>board</code>: An array of strings containing the board. Row is x, column is y. 
                                 Empty space is represented by a <code>.</code>, a point is represented by a <code>$</code></li>
                             <li><code>turnNum</code>: The current turn of the game.</li>
+                            <li><code>nextTurnTime</code>: The time the next turn starts (in ms since epoch).</li>
+                            <li><code>turnDelay</code>: The delay between turns in ms.</li>
                             <li><code>players</code>: A list of objects with player information. Each player is in the format:
                                 <ul>
                                     <li><code>pos</code>: The position of the player, in the form [x, y]. Positions are 0-indexed.</li>
                                     <li><code>invented</code>: The list of this player's invented jumps, an array of vectors in the form [x, y].</li>
+                                    <li><code>points</code>: Number of points</li>
                                 </ul>
                             </li>
                             <li><code>myPlayer</code>: Only included if <code>playerId</code> is specified. 
-                                Includes information about your player in the same format as above.
-                                Note that your player is still included in <code>players</code> as well.</li>
+                                Note that your player is still included in <code>players</code> as well. 
+                                Includes information about your player in the same format as above, as well as the following: 
+                                <ul>
+                                    <li><code>nextMoveTurn</code>: Turn number of next time you can move.</li>
+                                    <li><code>lastMoveStatus</code>: Object representing result of the last complete move.
+                                        Has properties: 
+                                        <ul>
+                                            <li><code>ok</code>: true if last move was successful</li>
+                                            <li><code>msg</code>: code with message describing result.</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>
