@@ -7,21 +7,24 @@ async function refreshGame(id, elem) {
         clearTimeout(curViewTimeout);
         curViewId = id;
     }
-    const serverResp = await fetch("api/getGame", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            gameId: id
-        })
-    });
-    if (serverResp.ok) {
+    try {
+        const serverResp = await fetch("api/getGame", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                gameId: id
+            })
+        });
         gameData = await serverResp.json();
-    
-        displayGame(elem);
-    } else {
-        elem.innerHTML = "Error fetching game: "+serverResp.statusText;
+        if (serverResp.ok) {
+            displayGame(elem);
+        } else {
+            elem.innerHTML = "Error fetching game: "+gameData.error;
+        }
+    } catch (err) {
+        elem.innerHTML = "Error fetching game: "+err;
     }
     curViewTimeout = setTimeout(() => refreshGame(id, elem), 1000);
 }
@@ -39,10 +42,12 @@ function displayGame(elem) {
             const tr = document.createElement("tr");
             for (let y = 0; y < board[x].length; y++) {
                 const td = document.createElement("td");
-                if (board[x][y] !== ".") td.innerText = board[x][y];
+                td.innerText = "$"; // needs this for equal-ish spacing
                 td.id = `game-td-${x}-${y}`;
                 if (board[x][y] === "$") {
                     td.classList.add("game-td-point");
+                } else if (board[x][y] === ".") {
+                    td.classList.add("game-td-empty");
                 }
                 tr.appendChild(td);
             }
@@ -58,7 +63,12 @@ function displayGame(elem) {
 
         elem.appendChild(table);
     } else {
-        elem.innerText = "Lobby";
+        if (gameData.startTime === -1) {
+            elem.innerText = "In lobby, waiting for players";
+        } else {
+            const timeLeft = ((gameData.startTime - Date.now())/1000).toFixed(1);
+            elem.innerText = "Lobby, game starts in "+timeLeft+" seconds";
+        }
     }
 }
 

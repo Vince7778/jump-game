@@ -3,10 +3,18 @@
     background-color: yellow;
 }
 
+.game-td-empty {
+    color: white;
+}
+
 .game-td-player {
     background-color: lightskyblue;
 }
 
-.game-table > tr > td {
+.game-table > tr {
     text-align: center;
+}
+
+.game-table {
+    user-select: none;
 }

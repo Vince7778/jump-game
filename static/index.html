@@ -42,6 +42,7 @@
     <script>
         function setView() {
             const val = parseInt(document.getElementById("gameViewIdInput").value);
+            clearTimeout(curViewTimeout);
             refreshGame(val, document.getElementById("gameViewArea"));
         }
     </script>
