@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Jump Game</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <div class="row mt-2 mb-2" id="header">
+            <div class="col">
+                <h1>Jump Game Rules</h1>
+                <a href="/"><button class="btn btn-primary">Go back</button></a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <h4>Overview</h4>
+                <p>
+                    The objective of this game is to get the most points.<br>
+                    You control a player with only two moves: "invent" and "jump".<br>
+                    Jumping is simple: a jump by the vector [x, y] makes your player moves x units down and y units right. (Be careful, since these directions do not align with the normal coordinate plane.)<br>
+                    However, you cannot jump an amount without first inventing that jump. If you want to jump by [x, y], you must invent the vector [x, y] first.<br>
+                    Also, only one player can invent each vector! So if someone invents the vector [1, 2] before you do, you will never be able to jump that distance.<br>
+                    If you jump and land on a point, you will gain that point. The point will then be removed.<br>
+                    <b>This game is meant for bots to play! It has a fully-featured API. Try writing a script to play it for you!</b>
+                </p>
+                <h4>Turns</h4>
+                <p>
+                    This game is a mix between real-time games and turn-based games.<br>
+                    Every 1 second (default), a new turn starts. Players make decisions between turns, and all decisions are executed at the same time at the start of a turn.<br>
+                    By default, inventing takes 4 turns to complete, and jumping takes 1 turn. A game lasts 300 turns.<br>
+                    The simultaneous nature of turns means that some conflicts can happen.<br>
+                    If two players try and invent the same vector on the same turn, both of them fail.<br>
+                    If two players try and jump to the same cell on the same turn, both of them fail.<br>
+                    You cannot jump to a cell occupied by another player, even if that player moves away the next turn.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 import path from "path";
 import { Game, Player } from "./game.js";
+import cyrb53 from "./hash.cjs";
 
 const dirname = path.resolve();
 const SERVER_PORT = process.env.port || 3000;
@@ -17,6 +18,14 @@ router.get("/", (req, res) => {
 
 router.get("/docs", (req, res) => {
     res.sendFile(path.join(STATIC_PATH, "/docs.html"));
+});
+
+router.get("/rules", (req, res) => {
+    res.sendFile(path.join(STATIC_PATH, "/rules.html"));
+});
+
+router.get("/hash.js", (req, res) => {
+    res.sendFile(path.join(dirname, "/hash.cjs"));
 });
 
 // game logic
