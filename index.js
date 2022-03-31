@@ -2,10 +2,11 @@ import express from "express";
 const router = express.Router();
 import path from "path";
 import { Game, Player } from "./game.js";
+import { fileURLToPath } from "url";
 
-const dirname = path.resolve();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_PORT = process.env.port || 3000;
-const STATIC_PATH = path.join(dirname, "/static/");
+const STATIC_PATH = path.join(__dirname, "/static/");
 const jsonParser = express.json();
 
 // main pages
@@ -24,7 +25,7 @@ router.get("/rules", (req, res) => {
 });
 
 router.get("/hash.js", (req, res) => {
-    res.sendFile(path.join(dirname, "/hash.cjs"));
+    res.sendFile(path.join(__dirname, "/hash.cjs"));
 });
 
 // game logic
