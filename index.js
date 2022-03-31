@@ -16,11 +16,11 @@ router.get("/", (req, res) => {
     res.sendFile(path.join(STATIC_PATH, "/index.html"));
 });
 
-router.get("/docs", (req, res) => {
+router.get("/docs/", (req, res) => {
     res.sendFile(path.join(STATIC_PATH, "/docs.html"));
 });
 
-router.get("/rules", (req, res) => {
+router.get("/rules/", (req, res) => {
     res.sendFile(path.join(STATIC_PATH, "/rules.html"));
 });
 
