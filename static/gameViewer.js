@@ -34,6 +34,7 @@ class GameViewer {
             });
             const gameData = await serverResp.json();
             if (this.destroyed) return;
+            clearTimeout(this.timeout);
             if (serverResp.ok) {
                 this.parseData(gameData);
                 if (gameData.gameState === "lobby" && gameData.startTime > 0) {
@@ -49,6 +50,7 @@ class GameViewer {
             }
         } catch (err) {
             this.showError(err, "fetching game");
+            clearTimeout(this.timeout);
             this.timeout = setTimeout(this.refreshGame.bind(this), updateSpeed);
         }
     }
