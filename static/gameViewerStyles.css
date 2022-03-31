@@ -18,6 +18,10 @@
     background-color: darkgreen;
 }
 
+.game-td-winner {
+    outline: 6px solid gold;
+}
+
 .game-table > tr > td {
     border: 1px solid #CCC;
 }

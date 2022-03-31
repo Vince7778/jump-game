@@ -96,15 +96,20 @@
                 gamePlayer.onStart = () => {
                     document.getElementById("playMoveForm").classList.remove("d-none");
                 }
+                gamePlayer.onFinish = (gameData) => {
+                    document.getElementById("playMoveForm").classList.add("d-none");
+                }
                 gamePlayer.onMoveEnable = () => {
                     document.getElementById("playSendMoveButton").removeAttribute("disabled");
                     document.getElementById("playSendMoveButton").value = "Send move";
                 }
                 gamePlayer.onMoveDisable = (gameData) => {
                     document.getElementById("playSendMoveButton").setAttribute("disabled", "true");
-                    const turnsWait = gameData.myPlayer.nextMoveTurn-1-gameData.turnNum;
-                    const turnsPlural = turnsWait !== 1 ? "s" : "";
-                    document.getElementById("playSendMoveButton").value = `Wait ${turnsWait} turn${turnsPlural} to send`;
+                    if (gameData.myPlayer) {
+                        const turnsWait = gameData.myPlayer.nextMoveTurn-1-gameData.turnNum;
+                        const turnsPlural = turnsWait !== 1 ? "s" : "";
+                        document.getElementById("playSendMoveButton").value = `Wait ${turnsWait} turn${turnsPlural} to send`;
+                    }
                 }
             } catch (err) {
                 alert("Error joining game: "+err);

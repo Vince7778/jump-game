@@ -1,5 +1,5 @@
 
-const updateSpeed = 200;
+const updateSpeed = 1000;
 
 class GameViewer {
     constructor(id, elem, playerId) {
@@ -17,6 +17,7 @@ class GameViewer {
 
     // events
     onStart(gameData) {}
+    onFinish(gameData) {}
 
     async refreshGame() {
         try {
@@ -34,9 +35,9 @@ class GameViewer {
             if (this.destroyed) return;
             if (serverResp.ok) {
                 this.parseData(gameData);
-                if (gameData.gameState === "lobby") {
+                if (gameData.gameState === "lobby" && gameData.startTime > 0) {
                     this.timeout = setTimeout(this.refreshGame.bind(this), Math.min(updateSpeed, gameData.startTime-Date.now()));
-                } else if (gameData.gameState === "playing") {
+                } else if (gameData.gameState === "playing" && gameData) {
                     this.timeout = setTimeout(this.refreshGame.bind(this), gameData.nextTurnTime-Date.now());
                 } else {
                     this.timeout = setTimeout(this.refreshGame.bind(this), updateSpeed);
@@ -55,6 +56,9 @@ class GameViewer {
         if (gameData.gameState === "playing" && this.lastState === "lobby") {
             this.onStart(gameData);
         }
+        if (gameData.gameState === "finished" && this.lastState === "playing") {
+            this.onFinish(gameData);
+        }
         this.lastState = gameData.gameState;
 
         this.displayGame(gameData);
@@ -70,9 +74,23 @@ class GameViewer {
         if (gameData.gameState !== "lobby") {
             infoP.innerText = `Turn: ${gameData.turnNum}, Game ID: ${this.id}`;
 
+            const board = gameData.board;
+
+            // remove popovers
+            if (document.getElementById(tableId)) {
+                for (let x = 0; x < board.length; x++) {
+                    for (let y = 0; y < board[x].length; y++) {
+                        const tdId = `game-td-${this.elem.id}-${x}-${y}`;
+                        const tdElem = document.getElementById(tdId);
+                        if (!tdElem) continue;
+                        const popover = bootstrap.Popover.getInstance(tdElem);
+                        popover?.dispose();
+                    }
+                }
+            }
+
             table.classList.add("game-table");
             table.innerHTML = "";
-            const board = gameData.board;
             for (let x = 0; x < board.length; x++) {
                 const tr = document.createElement("tr");
                 for (let y = 0; y < board[x].length; y++) {
@@ -94,6 +112,23 @@ class GameViewer {
                 const elem = table.querySelector(posId);
                 elem.innerText = "P";
                 elem.classList.add("game-td-player");
+
+                if (gameData.gameState === "finished" && gameData.winnerHashes.includes(p.idHash)) {
+                    elem.classList.add("game-td-winner");
+                }
+
+                let inventStr = "";
+                for (const vec of p.invented) {
+                    inventStr += `(${vec[0]},${vec[1]}), `;
+                }
+                inventStr = inventStr.slice(0, -2); // remove comma
+
+                const popover = new bootstrap.Popover(elem, {
+                    animation: true,
+                    content: `Points: ${p.points}, Invented: [${inventStr}]`,
+                    placement: "top",
+                    trigger: "hover"
+                });
             }
 
             if (gameData.myPlayer) {
@@ -105,10 +140,14 @@ class GameViewer {
 
                 let inventStr = "";
                 for (const vec of p.invented) {
-                    inventStr += `(${vec[0]}, ${vec[1]}),`;
+                    inventStr += `(${vec[0]},${vec[1]}), `;
                 }
-                inventStr = inventStr.slice(0, -1); // remove comma
+                inventStr = inventStr.slice(0, -2); // remove comma
                 infoP.innerText += `, Points: ${p.points}, Invented: [${inventStr}]`;
+
+                if (gameData.gameState === "finished") {
+                    infoP.innerText += gameData.winnerHashes.includes(p.idHash) ? ", YOU WIN!" : ", You lose";
+                }
 
                 if (!p.lastMoveStatus.ok) {
                     this.showError(p.lastMoveStatus.msg, "last move");
@@ -164,7 +203,6 @@ class GamePlayer extends GameViewer {
 
     parseData(gameData) {
         super.parseData(gameData);
-        console.log(gameData);
 
         // must subtract one since moves happen at the beginning of the turn
         if (gameData.gameState === "playing") {
@@ -175,6 +213,9 @@ class GamePlayer extends GameViewer {
                 this.onMoveDisable(gameData);
                 this.moveEnabled = false;
             }
+        } else if (gameData.gameState === "finished" && this.moveEnabled) {
+            this.onMoveDisable(gameData);
+            this.moveEnabled = false;
         }
     }
 

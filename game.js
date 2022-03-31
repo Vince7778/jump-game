@@ -59,13 +59,18 @@ export class Game {
         this.invents = []; // list of all invented jumps
         this.turnNum = -1;
         this.gameStartTime = -1; // Time of first turn start
+        this.winnerHashes = [];
     }
 
     // Needs to run before any API operations (join, getGame)
     update() {
+        if (this.gameState === "finished") return;
+
         if (this.shouldStartGame()) {
             this.startGame();
         }
+
+        if (this.gameState === "lobby") return;
 
         const newTurnNum = Math.floor((Date.now()-this.gameStartTime)/settings.turnDelay)+1;
         if (newTurnNum > this.turnNum) {
@@ -74,7 +79,9 @@ export class Game {
             }
         }
 
-        this.turnNum = newTurnNum;
+        if (newTurnNum >= settings.maxGameLength) {
+            this.endGame();
+        } else this.turnNum = newTurnNum;
     }
 
     prelimMoveCheck(p, move) {
@@ -280,6 +287,7 @@ export class Game {
             turnDelay: settings.turnDelay,
             turnNum: this.turnNum,
             players: players,
+            winnerHashes: this.winnerHashes
         }
         if (playerId) {
             const myPlayer = this.players.find(p => p.id === playerId);
@@ -299,7 +307,7 @@ export class Game {
     setMove(playerId, move) {
         this.update();
         if (this.gameState !== "playing") {
-            throw new Error("ERR_GAME_NOT_STARTED");
+            throw new Error("ERR_GAME_NOT_PLAYING");
         }
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
@@ -317,6 +325,23 @@ export class Game {
             ok: true,
             turnNum: this.turnNum
         }
+    }
+
+    endGame() {
+        this.gameState = "finished";
+        this.turnNum = settings.maxGameLength;
+
+        // find winner(s)
+        let bestPoints = -1, bestHashes = [];
+        for (const p of this.players) {
+            if (p.points > bestPoints) {
+                bestPoints = p.points;
+                bestHashes = [p.idHash];
+            } else if (p.points === bestPoints) {
+                bestHashes.push(p.idHash);
+            }
+        }
+        this.winnerHashes = bestHashes;
     }
 
 }
