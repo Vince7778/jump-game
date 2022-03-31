@@ -1,5 +1,5 @@
 
-const updateSpeed = 1000;
+const updateSpeed = 200;
 const gracePeriod = 100; // time between turn start and refresh
 
 class GameViewer {
@@ -38,9 +38,9 @@ class GameViewer {
             if (serverResp.ok) {
                 this.parseData(gameData);
                 if (gameData.gameState === "lobby" && gameData.startTime > 0) {
-                    this.timeout = setTimeout(this.refreshGame.bind(this), Math.min(updateSpeed, gameData.startTime-Date.now()+gracePeriod));
+                    this.timeout = setTimeout(this.refreshGame.bind(this), updateSpeed);
                 } else if (gameData.gameState === "playing" && gameData) {
-                    this.timeout = setTimeout(this.refreshGame.bind(this), gameData.nextTurnTime-Date.now()+gracePeriod);
+                    this.timeout = setTimeout(this.refreshGame.bind(this), Math.max(updateSpeed, gameData.nextTurnTime-Date.now()+gracePeriod));
                 } else {
                     this.timeout = setTimeout(this.refreshGame.bind(this), updateSpeed);
                 }
