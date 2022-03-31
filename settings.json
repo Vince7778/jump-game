@@ -8,5 +8,5 @@
     "turnDelay": 1000,
     "jumpTurns": 1,
     "inventTurns": 4,
-    "maxGameLength": 30
+    "maxGameLength": 300
 }
